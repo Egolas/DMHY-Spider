@@ -3,7 +3,6 @@ import random
 import requests
 from bs4 import BeautifulSoup
 import re
-from pixivspider import *
 
 """
 初步设想：
