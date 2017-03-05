@@ -1,5 +1,4 @@
 import random
-
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -49,37 +48,38 @@ def get_html_tree( url, header=None, params=None):
     if header is None:
         header = heads[random.randint(0, len(heads) - 1)]
     resp, s = get_response(url, params=params, headers=header, cookies={}, timeout=50)
+
+    with open('file.txt', 'w', encoding="utf-8") as f:
+        f.write(resp.text)
+
     try:
         soup = BeautifulSoup(resp.content, "lxml")
         return soup
     except Exception as error:
-        print(error)
+        print(error.args[1])
         return
 url = 'https://share.dmhy.org/cms/page/name/programme.html'
 
-try:
-    soup = get_html_tree(url)
-except Exception as e:
-    print(e.args[1])
-    exit()
+soup = get_html_tree(url)
 
+titleInfo = []
 titleList = []
 dayHead = [r'sunarray',r'monarray',r'tuearray',r'wedarray',r'thuarray',r'friarray',r'satarray']
 for a in range(7):
-    titleList.append(re.findall(r'('+dayHead[a]+r'\.push.*<a href="/topics/list\?keyword=.*;)', soup.get_text()))
+    titleInfo.append(re.findall(r'('+dayHead[a]+r'\.push.*<a href="/topics/list\?keyword=.*;)', soup.get_text()))
 
 
-for a in titleList:
-    print(a)
+for titleOfDay in titleInfo:
+    print(titleOfDay)
+    for title in titleOfDay:
+        titleList.append(re.split(r"','",title))
 
-#print(soup.prettify())
-"""
-for link in soup.find_all("a", href=re.compile("keyword=")):
-    print(link)
-
-"""
-"""
-with open('file.html','wb') as f:
-    f.write(response.content)
-
-"""
+i = 0
+while i< titleList.__len__():
+    titleList[i][0] = titleList[i][0][0:titleList[i][0].find('.')+1]
+    groupInfo = re.findall(r'<a href=".*?">.*?</a>',titleList[i][3])
+    titleList[i][3] = []
+    for group in groupInfo:
+        titleList[i][3].append(re.match(r'.*href="(.*?)">(.*?)</a>',group).groups())
+    titleList[i][4] = titleList[i][4][:titleList[i][4].find("']);")]
+    i += 1
